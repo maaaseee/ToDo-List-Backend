@@ -6,6 +6,8 @@ import com.aieta.springboot.todo_app.domain.model.task.Category;
 public class CategoryMapper {
 
     public static CategoryResponse toResponse(Category category) {
+        if (category == null) return null;
+
         return new CategoryResponse(
             category.getId(), 
             category.getName(), 

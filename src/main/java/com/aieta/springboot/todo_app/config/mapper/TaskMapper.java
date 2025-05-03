@@ -7,6 +7,8 @@ import com.aieta.springboot.todo_app.domain.model.task.Task;
 
 public class TaskMapper {
     public static TaskResponse toResponse(Task task) {
+        if (task == null) return null;
+
         Category category = task.getCategory();
         CategorySummary summary = null;
         if (category != null) {
