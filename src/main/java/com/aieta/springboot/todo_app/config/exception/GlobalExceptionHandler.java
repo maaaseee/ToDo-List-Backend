@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
         ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.METHOD_NOT_ALLOWED.value(),
                 "Parámetros inválidos en la solicitud."
         );
 

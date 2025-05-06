@@ -38,7 +38,7 @@ public class TaskService {
 
     public TaskResponse getTaskById(String userId, String taskId) {
         Task foundTask = taskRepository.findById(userId, taskId)
-                    .orElseThrow(() -> new CategoryNotFoundException("La categoría no existe en el sistema."));
+                    .orElseThrow(() -> new TaskNotFoundException("La tarea no existe en el sistema."));
 
         return TaskMapper.toResponse(foundTask);
     }
@@ -59,7 +59,7 @@ public class TaskService {
         Category foundCategory = null;
         if (StringUtils.hasText(request.getCategoryId())) {
             foundCategory = categoryRepository.findById(request.getUserId(), request.getCategoryId())
-                        .orElseThrow(() -> new CategoryNotFoundException("La categoría no existe en el sistema."));
+                        .orElseThrow(() -> new TaskNotFoundException("La tarea no existe en el sistema."));
         }
 
         Task newTask = new Task(
