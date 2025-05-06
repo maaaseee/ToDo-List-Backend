@@ -6,14 +6,18 @@ import jakarta.validation.constraints.Size;
 
 public class CreateCategoryRequest {
     
-    @NotBlank
-    @Size(max = 120)
+    @NotBlank(message = "El nombre no puede estar vacio.")
+    @Size(min = 3, max = 120, message = "El nombre debe contener entre 3 y 120 caracteres.")
     private String name;
 
-    @Pattern(regexp = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")
+    @NotBlank(message = "El color no puede estar vacio")
+    @Pattern(
+        regexp = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$", 
+        message = "El color debe cumplir con el formato de color hexadecimal"
+        )
     private String hexColor;
 
-    @NotBlank
+    @NotBlank(message = "El ID de usuario no puede estar vacio.")
     private String userId;
 
     public CreateCategoryRequest(String name, String hexColor, String userId) {

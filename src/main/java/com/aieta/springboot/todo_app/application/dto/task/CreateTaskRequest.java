@@ -8,21 +8,21 @@ import jakarta.validation.constraints.Size;
 
 public class CreateTaskRequest {
 
-    @NotBlank
-    @Size(max = 120)
+    @NotBlank(message = "El titulo no puede estar vacio.")
+    @Size(min = 3, max = 120, message = "El titulo debe tener entre 3 y 120 caracteres.")
     private String title;
 
-    @Size(max = 500)
+    @Size(max = 720, message = "La descripcion no puede exceder los 720 caracteres")
     private String description;
 
-    @NotNull
+    @NotNull(message = "La prioridad de la tarea no puede estar vacia.")
     private Priority priority;
 
     private String categoryId;
 
     private boolean completed;
 
-    @NotBlank
+    @NotBlank(message = "El ID de usuario no puede estar vacio.")
     private String userId;
 
     public String getTitle() {

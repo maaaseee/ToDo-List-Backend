@@ -44,15 +44,13 @@ public class TaskController {
     @Operation(summary = "Get one task from the system")
     @GetMapping("/{taskId}")
     public ResponseEntity<TaskResponse> getTaskById(@RequestParam String userId, @PathVariable String taskId) {
-        return taskService.getTaskById(userId, taskId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(taskService.getTaskById(userId, taskId));
     }
 
     @Operation(summary = "List all tasks from the system depending on their status (completed or incompleted)")
     @GetMapping("/status")
-    public ResponseEntity<List<TaskResponse>> getTasksByStatus(@RequestParam boolean completed) {
-        return ResponseEntity.ok(taskService.getTasksByStatus(completed));
+    public ResponseEntity<List<TaskResponse>> getTasksByStatus(@RequestParam String userId, @RequestParam boolean completed) {
+        return ResponseEntity.ok(taskService.getTasksByStatus(userId, completed));
     }
 
     @Operation(summary = "Create one task on the system")
@@ -68,15 +66,13 @@ public class TaskController {
         @RequestBody @Valid UpdateTaskRequest updateTask, 
         @RequestParam String userId) {
              
-        return new ResponseEntity<>(taskService.updateTask(taskId, updateTask, userId), HttpStatus.CREATED);
+        return new ResponseEntity<>(taskService.updateTask(taskId, updateTask, userId), HttpStatus.OK);
     }
 
     @Operation(summary = "Change status of a task on the system")
     @PatchMapping("/{taskId}/complete")
     public ResponseEntity<TaskResponse> markTaskAsCompleted(@RequestParam String userId, @PathVariable String taskId) {
-        return taskService.markTaskAsCompleted(userId, taskId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return new ResponseEntity<>(taskService.markTaskAsCompleted(userId, taskId), HttpStatus.OK);
     }
 
     @Operation(summary = "Delete a task form the system")

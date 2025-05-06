@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface MongoTaskRepository extends MongoRepository<Task, String>  {
 
-    List<Task> findAllByCompleted(boolean completed);
+    List<Task> findAllByUserIdAndCompleted(String userId, boolean completed);
     List<Task> findAllByPriority(Priority priority);
     List<Task> findAllByUserId(String userId);
 

@@ -25,14 +25,12 @@ public class MongoTaskRepositoryAdapter implements TaskRepository {
 
     @Override
     public Optional<Task> findById(String userId, String taskId) {
-        Optional<Task> optTask = mongoTaskRepository.findByIdAndUserId(taskId, userId);
-        System.out.println(optTask.isPresent());
-        return optTask;
+        return mongoTaskRepository.findByIdAndUserId(taskId, userId);
     }
 
     @Override
-    public List<Task> findByCompleted(boolean completed) {
-        return mongoTaskRepository.findAllByCompleted(completed);
+    public List<Task> findByCompleted(String userId, boolean completed) {
+        return mongoTaskRepository.findAllByUserIdAndCompleted(userId, completed);
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.aieta.springboot.todo_app.application.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -37,12 +36,15 @@ public class TaskService {
                             .toList();
     }
 
-    public Optional<TaskResponse> getTaskById(String userId, String taskId) {
-        return taskRepository.findById(userId, taskId).map(TaskMapper::toResponse);
+    public TaskResponse getTaskById(String userId, String taskId) {
+        Task foundTask = taskRepository.findById(userId, taskId)
+                    .orElseThrow(() -> new CategoryNotFoundException("La categoría no existe en el sistema."));
+
+        return TaskMapper.toResponse(foundTask);
     }
 
-    public List<TaskResponse> getTasksByStatus(boolean completed) {
-        return taskRepository.findByCompleted(completed).stream()
+    public List<TaskResponse> getTasksByStatus(String userId, boolean completed) {
+        return taskRepository.findByCompleted(userId, completed).stream()
                             .map(TaskMapper::toResponse)
                             .toList();
     }
@@ -76,16 +78,40 @@ public class TaskService {
         Task foundTask = taskRepository.findById(userId, taskId)
                         .orElseThrow(() -> new TaskNotFoundException("La tarea no existe en el sistema."));
 
-        if (request.getTitle() != null) foundTask.setTitle(request.getTitle());
-        if (request.getDescription() != null) foundTask.setDescription(request.getDescription());
-        if (request.getPriority() != null) foundTask.setPriority(request.getPriority());
-        if (request.getCompleted() != null) foundTask.setCompleted(request.getCompleted());
+        boolean wasModified = false;
+
+        if (request.getTitle() != null && !request.getTitle().equals(foundTask.getTitle())) {
+            foundTask.setTitle(request.getTitle());
+            wasModified = true;
+        }
+    
+        if (request.getDescription() != null && !request.getDescription().equals(foundTask.getDescription())) {
+            foundTask.setDescription(request.getDescription());
+            wasModified = true;
+        }
+    
+        if (request.getPriority() != null && request.getPriority() != foundTask.getPriority()) {
+            foundTask.setPriority(request.getPriority());
+            wasModified = true;
+        }
+    
+        if (request.getCompleted() != null && !request.getCompleted().equals(foundTask.isCompleted())) {
+            foundTask.setCompleted(request.getCompleted());
+            wasModified = true;
+        }
 
         if (request.getCategoryId() != null) {
             Category category = categoryRepository.findById(userId, request.getCategoryId())
                             .orElseThrow(() -> new CategoryNotFoundException("La categoria no existe en el sistema."));
 
-            foundTask.setCategory(category);
+            if (foundTask.getCategory() == null || !foundTask.getCategory().getId().equals(category.getId())) {
+                foundTask.setCategory(category);
+                wasModified = true;
+            }
+        }
+
+        if (!wasModified) {
+            return TaskMapper.toResponse(foundTask);
         }
 
         foundTask.setUpdatedAt(LocalDateTime.now());
@@ -93,13 +119,14 @@ public class TaskService {
         return TaskMapper.toResponse(taskRepository.save(foundTask));
     }
 
-    public Optional<TaskResponse> markTaskAsCompleted(String userId, String taskId) {
-        return taskRepository.findById(userId, taskId)
-                .map(existingTask -> {
-                    existingTask.setCompleted(true);
-                    existingTask.setUpdatedAt(LocalDateTime.now());
-                    return TaskMapper.toResponse(taskRepository.save(existingTask));
-                });
+    public TaskResponse markTaskAsCompleted(String userId, String taskId) {
+        Task foundTask = taskRepository.findById(userId, taskId)
+                            .orElseThrow(() -> new TaskNotFoundException("La tarea no existe en el sistema."));
+
+        foundTask.setCompleted(!foundTask.isCompleted());
+        foundTask.setUpdatedAt(LocalDateTime.now());
+
+        return TaskMapper.toResponse(taskRepository.save(foundTask));
     }
 
     public void deleteTask(String userId, String taskId) {

@@ -43,9 +43,7 @@ public class CategoryController {
     @Operation(summary = "Get one category from the system")
     @GetMapping("/{categoryId}")
     public ResponseEntity<CategoryResponse> getCategoryById(@RequestParam String userId, @PathVariable String categoryId) {
-        return categoryService.getCategoryById(userId, categoryId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return new ResponseEntity<>(categoryService.getCategoryById(userId, categoryId), HttpStatus.OK);
     }
 
     @Operation(summary = "Create one category on the system")

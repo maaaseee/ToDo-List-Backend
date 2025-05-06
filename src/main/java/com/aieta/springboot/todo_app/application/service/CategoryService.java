@@ -1,7 +1,6 @@
 package com.aieta.springboot.todo_app.application.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -32,16 +31,25 @@ public class CategoryService {
         return CategoryMapper.toResponse(repository.save(newCategory));
     }
 
-    public CategoryResponse updateCategory(
-        String userId, 
-        String categoryId, 
-        UpdateCategoryRequest request) {
-
+    public CategoryResponse updateCategory(String userId, String categoryId, UpdateCategoryRequest request) {
         Category foundCategory = repository.findById(userId, categoryId)
                         .orElseThrow(() -> new CategoryNotFoundException("La categoria no existe en el sistema."));
 
-        if (request.getName() != null) foundCategory.setName(request.getName());
-        if (request.getHexColor() != null) foundCategory.setHexColor(request.getHexColor());
+        boolean wasModified = false;
+
+        if (request.getName() != null && !request.getName().equals(foundCategory.getName())) {
+            foundCategory.setName(request.getName());
+            wasModified = true;
+        }
+
+        if (request.getHexColor() != null && !request.getHexColor().equals(foundCategory.getHexColor())) {
+            foundCategory.setHexColor(request.getHexColor());
+            wasModified = true;
+        }
+
+        if (!wasModified) {
+            return CategoryMapper.toResponse(foundCategory);
+        }
 
         return CategoryMapper.toResponse(repository.save(foundCategory));
     }
@@ -52,8 +60,11 @@ public class CategoryService {
                         .toList();
     }
 
-    public Optional<CategoryResponse> getCategoryById(String userId, String categoryId) {
-        return repository.findById(userId, categoryId).map(CategoryMapper::toResponse);
+    public CategoryResponse getCategoryById(String userId, String categoryId) {
+        Category foundCategory = repository.findById(userId, categoryId)
+                        .orElseThrow(() -> new CategoryNotFoundException("La categoria no existe en el sistema."));
+
+        return CategoryMapper.toResponse(foundCategory);
     }
 
     public void deleteCategory(String userId, String categoryId) {
