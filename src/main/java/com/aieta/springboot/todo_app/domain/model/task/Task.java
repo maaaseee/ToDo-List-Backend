@@ -2,7 +2,10 @@ package com.aieta.springboot.todo_app.domain.model.task;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -13,8 +16,12 @@ public class Task {
     private String id;
 
     private String userId;
+
+    @Indexed
     private String title;
+
     private String description;
+
     private boolean completed;
 
     @DBRef(lazy = true)
@@ -22,16 +29,15 @@ public class Task {
 
     private Priority priority;
 
+    @CreatedDate
     private LocalDateTime createdAt;
+
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public Task() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public Task(String title, String description, Category category, Priority priority, String userId, boolean completed) {
-        this();
+    public Task(String title, String description, Category category, 
+        Priority priority, String userId, boolean completed) 
+        {
         this.title = title;
         this.description = description;
         this.category = category;
