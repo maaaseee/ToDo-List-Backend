@@ -2,6 +2,7 @@ package com.aieta.springboot.todo_app.infrastructure.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,11 +29,8 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/categories")
 public class CategoryController {
     
-    private final CategoryService categoryService;
-
-    public CategoryController(CategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
+    @Autowired
+    private CategoryService categoryService;
 
     @Operation(summary = "Get all the categories from the system")
     @GetMapping

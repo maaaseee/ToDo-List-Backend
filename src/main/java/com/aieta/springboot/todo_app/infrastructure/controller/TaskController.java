@@ -1,9 +1,13 @@
 package com.aieta.springboot.todo_app.infrastructure.controller;
 
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,6 +23,7 @@ import com.aieta.springboot.todo_app.application.dto.task.CreateTaskRequest;
 import com.aieta.springboot.todo_app.application.dto.task.TaskResponse;
 import com.aieta.springboot.todo_app.application.dto.task.UpdateTaskRequest;
 import com.aieta.springboot.todo_app.application.service.TaskService;
+import com.aieta.springboot.todo_app.domain.model.user.User;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,38 +40,39 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/tasks")
 public class TaskController {
 
-    private final TaskService taskService;
-
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
-    }
+    @Autowired
+    private TaskService taskService;
 
     @Operation(
         summary = "List all tasks from the system", 
         description = "Returns an array of tasks that are saved on the system and are property of the user.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Success", 
-            content = {
-                @Content(
-                    mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = TaskResponse.class))
-                )
-            }),
-            @ApiResponse(responseCode = "404", description = "Resource not found", 
-            content = {
-                @Content(mediaType = "application/json")
-            }),
-            @ApiResponse(responseCode = "405", description = "Method not allowed/Invalid parameters", 
-            content = {
-                @Content(mediaType = "application/json")
-            })
+        content = {
+            @Content(
+                mediaType = "application/json",
+                array = @ArraySchema(schema = @Schema(implementation = TaskResponse.class))
+            )
+        }),
+        @ApiResponse(responseCode = "404", description = "Resource not found", 
+        content = {
+            @Content(mediaType = "application/json")
+        }),
+        @ApiResponse(responseCode = "405", description = "Method not allowed/Invalid parameters", 
+        content = {
+            @Content(mediaType = "application/json")
         })
+    })
     @GetMapping
     public ResponseEntity<List<TaskResponse>> getAllTasks(
-        @Parameter(name = "userId", description = "ID from the User", required = true)
-        @RequestParam String userId
+        // @Parameter(name = "userId", description = "ID from the User", required = true)
+        // @RequestParam String userId
         ) {
-        return ResponseEntity.ok(taskService.getAllTasks(userId));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        User currentUser = (User) authentication.getPrincipal();
+
+        return ResponseEntity.ok(taskService.getAllTasks(currentUser.getId()));
     }
 
     @Operation(summary = "Get one task from the system")
@@ -76,26 +82,27 @@ public class TaskController {
             @Content(
                 mediaType = "application/json",
                 schema = @Schema(implementation = TaskResponse.class)
-                )
-            }),
-            @ApiResponse(responseCode = "404", description = "Resource not found", 
-            content = {
-                @Content(mediaType = "application/json")
-            }),
-            @ApiResponse(responseCode = "405", description = "Method not allowed/Invalid parameters", 
-            content = {
-                @Content(mediaType = "application/json")
-            })
+            )
+        }),
+        @ApiResponse(responseCode = "404", description = "Resource not found", 
+        content = {
+            @Content(mediaType = "application/json")
+        }),
+        @ApiResponse(responseCode = "405", description = "Method not allowed/Invalid parameters", 
+        content = {
+            @Content(mediaType = "application/json")
         })
+    })
     @GetMapping("/{taskId}")
     public ResponseEntity<TaskResponse> getTaskById(
-        @Parameter(name = "userId", description = "ID from the User", required = true)
-        @RequestParam String userId, 
-        
         @Parameter(name = "taskId", description = "ID from the Task", required = true)
         @PathVariable String taskId
         ) {
-        return ResponseEntity.ok(taskService.getTaskById(userId, taskId));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        User currentUser = (User) authentication.getPrincipal();
+
+        return ResponseEntity.ok(taskService.getTaskById(currentUser.getId(), taskId));
     }
 
     @Operation(summary = "List all tasks from the system depending on their status (completed or incompleted)")
@@ -103,27 +110,28 @@ public class TaskController {
         @ApiResponse(responseCode = "200", description = "Success", 
         content = {
             @Content(
-                    mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = TaskResponse.class))
-                )
-            }),
-            @ApiResponse(responseCode = "404", description = "Resource not found", 
-            content = {
-                @Content(mediaType = "application/json")
-            }),
-            @ApiResponse(responseCode = "405", description = "Method not allowed/Invalid parameters", 
-            content = {
-                @Content(mediaType = "application/json")
-            })
+                mediaType = "application/json",
+                array = @ArraySchema(schema = @Schema(implementation = TaskResponse.class))
+            )
+        }),
+        @ApiResponse(responseCode = "404", description = "Resource not found", 
+        content = {
+            @Content(mediaType = "application/json")
+        }),
+        @ApiResponse(responseCode = "405", description = "Method not allowed/Invalid parameters", 
+        content = {
+            @Content(mediaType = "application/json")
         })
+    })
     @GetMapping("/status")
     public ResponseEntity<List<TaskResponse>> getTasksByStatus(
-        @Parameter(name = "userId", description = "ID from the User", required = true)
-        @RequestParam String userId, 
-
         @Parameter(name = "completed", description = "State of the task, completed or not", required = true)
         @RequestParam(defaultValue = "false") boolean completed) {
-        return ResponseEntity.ok(taskService.getTasksByStatus(userId, completed));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        User currentUser = (User) authentication.getPrincipal();
+
+        return ResponseEntity.ok(taskService.getTasksByStatus(currentUser.getId(), completed));
     }
 
     @Operation(summary = "Create one task on the system")
@@ -172,8 +180,12 @@ public class TaskController {
         @PathVariable String taskId, 
         @RequestBody @Valid UpdateTaskRequest updateTask, 
         @RequestParam String userId) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        User currentUser = (User) authentication.getPrincipal();
              
-        return new ResponseEntity<>(taskService.updateTask(taskId, updateTask, userId), HttpStatus.OK);
+        return new ResponseEntity<>(taskService.updateTask(taskId, updateTask, currentUser.getId()), HttpStatus.OK);
     }
 
     @Operation(summary = "Change status of a task on the system")
@@ -196,7 +208,11 @@ public class TaskController {
         })
     @PatchMapping("/{taskId}/complete")
     public ResponseEntity<TaskResponse> markTaskAsCompleted(@RequestParam String userId, @PathVariable String taskId) {
-        return new ResponseEntity<>(taskService.markTaskAsCompleted(userId, taskId), HttpStatus.OK);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        User currentUser = (User) authentication.getPrincipal();
+
+        return new ResponseEntity<>(taskService.markTaskAsCompleted(currentUser.getId(), taskId), HttpStatus.OK);
     }
 
     @Operation(summary = "Delete a task form the system")
@@ -217,8 +233,13 @@ public class TaskController {
             })
         })
     @DeleteMapping("/{taskId}")
-    public ResponseEntity<Void> deleteTask(@RequestParam String userId, @PathVariable String taskId) {
-        taskService.deleteTask(userId, taskId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteTask(@RequestParam String userId, @PathVariable String taskId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        User currentUser = (User) authentication.getPrincipal();
+
+        taskService.deleteTask(currentUser.getId(), taskId);
+
+        return ResponseEntity.ok(Map.of("message", "Se borro la tarea correctamente"));
     }
 }

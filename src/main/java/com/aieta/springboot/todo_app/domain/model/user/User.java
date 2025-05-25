@@ -10,22 +10,23 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-@Document(collection = "tasks")
+@Document(collection = "users")
 public class User implements UserDetails {
 
     @Id
     private String id;
 
-    private String username;
+    private String name;
 
     @Indexed(unique = true)
     private String email;
 
     private String password;
 
-    private boolean active;
+    private String role = "ROLE_USER";
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -33,16 +34,40 @@ public class User implements UserDetails {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public User(String username, String email, String password, boolean active) {
-        this.username = username;
+    public User(String name, String email, String password) {
+        this.name = name;
         this.email = email;
         this.password = password;
-        this.active = active;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new SimpleGrantedAuthority(role));
+    }
+
+    @Override
+    public String getUsername() {
+        return email; // Retorna email en lugar de username
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 
     public String getId() {
@@ -53,12 +78,12 @@ public class User implements UserDetails {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getName() {
+        return name;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setName(String username) {
+        this.name = username;
     }
 
     public String getEmail() {
@@ -77,14 +102,6 @@ public class User implements UserDetails {
         this.password = password;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -97,18 +114,17 @@ public class User implements UserDetails {
         this.updatedAt = updatedAt;
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     @Override
-    public boolean isAccountNonLocked() {
-        return true;
+    public String toString() {
+        return "User [id=" + id + ", name=" + name + ", email=" + email + ", password=" + password + ", role=" + role
+                + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "]";
     }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-}
+}   
