@@ -22,9 +22,6 @@ public class CreateTaskRequest {
 
     private boolean completed;
 
-    @NotBlank(message = "El ID de usuario no puede estar vacio.")
-    private String userId;
-
     public String getTitle() {
         return title;
     }
@@ -47,14 +44,6 @@ public class CreateTaskRequest {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
     }
 
     public boolean isCompleted() {

@@ -55,7 +55,7 @@ public class MongoAuthService {
         );
         // Obtener usuario autenticado
         User user = (User) authentication.getPrincipal();
-        
+
         // Generar token
         String token = jwtUtils.generateToken(user);
         

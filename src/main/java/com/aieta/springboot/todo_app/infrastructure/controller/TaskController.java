@@ -154,7 +154,11 @@ public class TaskController {
         })
     @PostMapping
     public ResponseEntity<TaskResponse> createTask(@RequestBody @Valid CreateTaskRequest task) {
-        return new ResponseEntity<>(taskService.createTask(task), HttpStatus.CREATED);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        User currentUser = (User) authentication.getPrincipal();
+
+        return new ResponseEntity<>(taskService.createTask(task, currentUser.getId()), HttpStatus.CREATED);
     }
 
     @Operation(summary = "Update one task from the system")
@@ -178,13 +182,12 @@ public class TaskController {
     @PutMapping("/{taskId}")
     public ResponseEntity<TaskResponse> updateTask(
         @PathVariable String taskId, 
-        @RequestBody @Valid UpdateTaskRequest updateTask, 
-        @RequestParam String userId) {
+        @RequestBody @Valid UpdateTaskRequest updateTask) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
         User currentUser = (User) authentication.getPrincipal();
-             
+        
         return new ResponseEntity<>(taskService.updateTask(taskId, updateTask, currentUser.getId()), HttpStatus.OK);
     }
 
@@ -207,7 +210,7 @@ public class TaskController {
             })
         })
     @PatchMapping("/{taskId}/complete")
-    public ResponseEntity<TaskResponse> markTaskAsCompleted(@RequestParam String userId, @PathVariable String taskId) {
+    public ResponseEntity<TaskResponse> markTaskAsCompleted(@PathVariable String taskId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
         User currentUser = (User) authentication.getPrincipal();

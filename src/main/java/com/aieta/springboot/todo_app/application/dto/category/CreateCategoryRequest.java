@@ -17,13 +17,10 @@ public class CreateCategoryRequest {
         )
     private String hexColor;
 
-    @NotBlank(message = "El ID de usuario no puede estar vacio.")
-    private String userId;
 
-    public CreateCategoryRequest(String name, String hexColor, String userId) {
+    public CreateCategoryRequest(String name, String hexColor) {
         this.name = name;
         this.hexColor = hexColor;
-        this.userId = userId;
     }
 
     public String getName() {
@@ -37,11 +34,5 @@ public class CreateCategoryRequest {
     }
     public void setHexColor(String hexColor) {
         this.hexColor = hexColor;
-    }
-    public String getUserId() {
-        return userId;
-    }
-    public void setUserId(String userId) {
-        this.userId = userId;
     }
 }

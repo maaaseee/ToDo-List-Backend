@@ -15,24 +15,27 @@ import com.aieta.springboot.todo_app.domain.repository.CategoryRepository;
 @Service
 public class CategoryService {
 
-    private final CategoryRepository repository;
+    private final CategoryRepository categoryRepository;
 
-    public CategoryService(CategoryRepository repository) {
-        this.repository = repository;
+    private final TaskService taskRepository;
+
+    public CategoryService(CategoryRepository categoryRepository, TaskService taskRepository) {
+        this.categoryRepository = categoryRepository;
+        this.taskRepository = taskRepository;
     }
 
-    public CategoryResponse createCategory(CreateCategoryRequest request) {
+    public CategoryResponse createCategory(CreateCategoryRequest request, String userId) {
         Category newCategory = new Category(
             request.getName(), 
-            request.getHexColor(), 
-            request.getUserId()
+            request.getHexColor(),
+            userId
         );
 
-        return CategoryMapper.toResponse(repository.save(newCategory));
+        return CategoryMapper.toResponse(categoryRepository.save(newCategory));
     }
 
     public CategoryResponse updateCategory(String userId, String categoryId, UpdateCategoryRequest request) {
-        Category foundCategory = repository.findById(userId, categoryId)
+        Category foundCategory = categoryRepository.findById(userId, categoryId)
                         .orElseThrow(() -> new CategoryNotFoundException("La categoria no existe en el sistema."));
 
         boolean wasModified = false;
@@ -51,26 +54,28 @@ public class CategoryService {
             return CategoryMapper.toResponse(foundCategory);
         }
 
-        return CategoryMapper.toResponse(repository.save(foundCategory));
+        return CategoryMapper.toResponse(categoryRepository.save(foundCategory));
     }
 
     public List<CategoryResponse> getAllCategories(String userId) {
-        return repository.findAll(userId).stream()
+        return categoryRepository.findAll(userId).stream()
                         .map(CategoryMapper::toResponse)
                         .toList();
     }
 
     public CategoryResponse getCategoryById(String userId, String categoryId) {
-        Category foundCategory = repository.findById(userId, categoryId)
+        Category foundCategory = categoryRepository.findById(userId, categoryId)
                         .orElseThrow(() -> new CategoryNotFoundException("La categoria no existe en el sistema."));
 
         return CategoryMapper.toResponse(foundCategory);
     }
 
     public void deleteCategory(String userId, String categoryId) {
-        repository.findById(userId, categoryId)
+        categoryRepository.findById(userId, categoryId)
                         .orElseThrow(() -> new CategoryNotFoundException("La categoria no existe en el sistema."));
 
-        repository.deleteById(categoryId);
+
+        taskRepository.removeCategoryFromTasks(categoryId);
+        categoryRepository.deleteById(categoryId);
     }
 }

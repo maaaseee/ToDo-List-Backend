@@ -17,6 +17,7 @@ import com.aieta.springboot.todo_app.domain.model.task.Priority;
 import com.aieta.springboot.todo_app.domain.model.task.Task;
 import com.aieta.springboot.todo_app.domain.repository.CategoryRepository;
 import com.aieta.springboot.todo_app.domain.repository.TaskRepository;
+import com.aieta.springboot.todo_app.infrastructure.persistance.task.MongoTaskHelper;
 
 @Service
 public class TaskService {
@@ -25,9 +26,12 @@ public class TaskService {
 
     private final CategoryRepository categoryRepository;
 
-    public TaskService(TaskRepository taskRepository, CategoryRepository categoryRepository) {
+    private final MongoTaskHelper taskHelper;
+
+    public TaskService(TaskRepository taskRepository, CategoryRepository categoryRepository, MongoTaskHelper taskHelper) {
         this.taskRepository = taskRepository;
         this.categoryRepository = categoryRepository;
+        this.taskHelper = taskHelper;
     }
 
     public List<TaskResponse> getAllTasks(String userId) {
@@ -55,10 +59,10 @@ public class TaskService {
                             .toList();
     }
 
-    public TaskResponse createTask(CreateTaskRequest request) {
+    public TaskResponse createTask(CreateTaskRequest request, String userId) {
         Category foundCategory = null;
         if (StringUtils.hasText(request.getCategoryId())) {
-            foundCategory = categoryRepository.findById(request.getUserId(), request.getCategoryId())
+            foundCategory = categoryRepository.findById(userId, request.getCategoryId())
                         .orElseThrow(() -> new TaskNotFoundException("La tarea no existe en el sistema."));
         }
 
@@ -67,7 +71,7 @@ public class TaskService {
             request.getDescription(), 
             foundCategory, 
             request.getPriority(), 
-            request.getUserId(),
+            userId,
             request.isCompleted()
         );
 
@@ -77,6 +81,8 @@ public class TaskService {
     public TaskResponse updateTask(String taskId, UpdateTaskRequest request, String userId) {
         Task foundTask = taskRepository.findById(userId, taskId)
                         .orElseThrow(() -> new TaskNotFoundException("La tarea no existe en el sistema."));
+
+        System.out.println();
 
         boolean wasModified = false;
 
@@ -134,6 +140,10 @@ public class TaskService {
                             .orElseThrow(() -> new TaskNotFoundException("La tarea no existe en el sistema."));
 
         taskRepository.deleteById(taskId);
+    }
+
+    public void removeCategoryFromTasks(String categoryId) {
+        taskHelper.clearCategoryReference(categoryId);
     }
 }
 
