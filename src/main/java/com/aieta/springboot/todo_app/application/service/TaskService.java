@@ -1,11 +1,13 @@
 package com.aieta.springboot.todo_app.application.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.aieta.springboot.todo_app.application.dto.PagedResponse;
 import com.aieta.springboot.todo_app.application.dto.task.CreateTaskRequest;
 import com.aieta.springboot.todo_app.application.dto.task.TaskResponse;
 import com.aieta.springboot.todo_app.application.dto.task.UpdateTaskRequest;
@@ -34,10 +36,16 @@ public class TaskService {
         this.taskHelper = taskHelper;
     }
 
-    public List<TaskResponse> getAllTasks(String userId) {
-        return taskRepository.findAll(userId).stream()
-                            .map(TaskMapper::toResponse)
-                            .toList();
+    public PagedResponse<TaskResponse> getAllTasks(String userId, Pageable pageable, String titleSearch) {
+        Page<Task> pagedTasks;
+
+        if (StringUtils.hasText(titleSearch)) {
+            pagedTasks = taskRepository.findAllByTitle(userId, titleSearch, pageable);
+        } else {
+            pagedTasks = taskRepository.findAll(userId, pageable);
+        }
+
+        return PagedResponse.fromPage(pagedTasks, TaskMapper::toResponse);
     }
 
     public TaskResponse getTaskById(String userId, String taskId) {
@@ -47,16 +55,27 @@ public class TaskService {
         return TaskMapper.toResponse(foundTask);
     }
 
-    public List<TaskResponse> getTasksByStatus(String userId, boolean completed) {
-        return taskRepository.findByCompleted(userId, completed).stream()
-                            .map(TaskMapper::toResponse)
-                            .toList();
+    public PagedResponse<TaskResponse> getTasksByStatus(String userId, boolean completed, String titleSearch, Pageable pageable) {
+        Page<Task> pagedTasks;
+
+        if (StringUtils.hasText(titleSearch)) {
+            pagedTasks = taskRepository.findByCompletedAndTitle(userId, completed, titleSearch, pageable);
+        } else {
+            pagedTasks = taskRepository.findByCompleted(userId, completed, pageable);
+        }
+
+        return PagedResponse.fromPage(pagedTasks, TaskMapper::toResponse);
     }
 
-    public List<TaskResponse> getTasksByPriority(Priority priority) {
-        return taskRepository.findByPriority(priority).stream()
-                            .map(TaskMapper::toResponse)
-                            .toList();
+    public PagedResponse<TaskResponse> getTasksByPriority(String userId, Priority priority, String titleSearch, Pageable pageable) {
+        Page<Task> pagedTasks;
+
+        if (StringUtils.hasText(titleSearch)) {
+            pagedTasks = taskRepository.findByPriorityAndTitle(userId, priority, titleSearch, pageable);
+        } else {
+            pagedTasks = taskRepository.findByPriority(userId, priority, pageable);
+        }
+        return PagedResponse.fromPage(pagedTasks, TaskMapper::toResponse);
     }
 
     public TaskResponse createTask(CreateTaskRequest request, String userId) {

@@ -1,8 +1,9 @@
 package com.aieta.springboot.todo_app.infrastructure.persistance.task;
 
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.aieta.springboot.todo_app.domain.model.task.Priority;
@@ -19,8 +20,8 @@ public class MongoTaskRepositoryAdapter implements TaskRepository {
     }
 
     @Override
-    public List<Task> findAll(String userId) {
-        return mongoTaskRepository.findAllByUserId(userId);
+    public Page<Task> findAll(String userId, Pageable pageable) {
+        return mongoTaskRepository.findAllByUserId(userId, pageable);
     }
 
     @Override
@@ -29,8 +30,8 @@ public class MongoTaskRepositoryAdapter implements TaskRepository {
     }
 
     @Override
-    public List<Task> findByCompleted(String userId, boolean completed) {
-        return mongoTaskRepository.findAllByUserIdAndCompleted(userId, completed);
+    public Page<Task> findByCompleted(String userId, boolean completed, Pageable pageable) {
+        return mongoTaskRepository.findAllByUserIdAndCompleted(userId, completed, pageable);
     }
 
     @Override
@@ -44,7 +45,22 @@ public class MongoTaskRepositoryAdapter implements TaskRepository {
     }
 
     @Override
-    public List<Task> findByPriority(Priority priority) {
-        return mongoTaskRepository.findAllByPriority(priority);
+    public Page<Task> findByPriority(String userId, Priority priority, Pageable pageable) {
+        return mongoTaskRepository.findAllByUserIdAndPriority(userId, priority, pageable);
+    }
+
+    @Override
+    public Page<Task> findAllByTitle(String userId, String titleSearch, Pageable pageable) {
+        return mongoTaskRepository.findAllByUserIdAndTitleContains(userId, titleSearch, pageable);
+    }
+
+    @Override
+    public Page<Task> findByCompletedAndTitle(String userId, boolean completed, String titleSearch, Pageable pageable) {
+        return mongoTaskRepository.findAllByUserIdAndCompletedAndTitleContains(userId, completed, titleSearch, pageable);
+    }
+
+    @Override
+    public Page<Task> findByPriorityAndTitle(String userId, Priority priority, String titleSearch, Pageable pageable) {
+        return mongoTaskRepository.findAllByUserIdAndPriorityAndTitleContains(userId, priority, titleSearch, pageable);
     }
 }

@@ -1,9 +1,11 @@
 package com.aieta.springboot.todo_app.infrastructure.controller;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -19,10 +21,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.aieta.springboot.todo_app.application.dto.PagedResponse;
 import com.aieta.springboot.todo_app.application.dto.task.CreateTaskRequest;
 import com.aieta.springboot.todo_app.application.dto.task.TaskResponse;
 import com.aieta.springboot.todo_app.application.dto.task.UpdateTaskRequest;
 import com.aieta.springboot.todo_app.application.service.TaskService;
+import com.aieta.springboot.todo_app.domain.model.task.Priority;
 import com.aieta.springboot.todo_app.domain.model.user.User;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -64,15 +68,18 @@ public class TaskController {
         })
     })
     @GetMapping
-    public ResponseEntity<List<TaskResponse>> getAllTasks(
-        // @Parameter(name = "userId", description = "ID from the User", required = true)
-        // @RequestParam String userId
+    public ResponseEntity<PagedResponse<TaskResponse>> getAllTasks(
+            @RequestParam(required = false) String titleSearch,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
         ) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
         User currentUser = (User) authentication.getPrincipal();
 
-        return ResponseEntity.ok(taskService.getAllTasks(currentUser.getId()));
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        return ResponseEntity.ok(taskService.getAllTasks(currentUser.getId(), pageable, titleSearch));
     }
 
     @Operation(summary = "Get one task from the system")
@@ -95,8 +102,8 @@ public class TaskController {
     })
     @GetMapping("/{taskId}")
     public ResponseEntity<TaskResponse> getTaskById(
-        @Parameter(name = "taskId", description = "ID from the Task", required = true)
-        @PathVariable String taskId
+            @Parameter(name = "taskId", description = "ID from the Task", required = true)
+            @PathVariable String taskId
         ) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
@@ -124,15 +131,38 @@ public class TaskController {
         })
     })
     @GetMapping("/status")
-    public ResponseEntity<List<TaskResponse>> getTasksByStatus(
-        @Parameter(name = "completed", description = "State of the task, completed or not", required = true)
-        @RequestParam(defaultValue = "false") boolean completed) {
+    public ResponseEntity<PagedResponse<TaskResponse>> getTasksByStatus(
+            @Parameter(name = "completed", description = "State of the task, completed or not", required = true)
+            @RequestParam(required = false) String titleSearch,
+            @RequestParam(defaultValue = "false") boolean completed,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+        ) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
         User currentUser = (User) authentication.getPrincipal();
 
-        return ResponseEntity.ok(taskService.getTasksByStatus(currentUser.getId(), completed));
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        return ResponseEntity.ok(taskService.getTasksByStatus(currentUser.getId(), completed, titleSearch, pageable));
     }
+
+    @GetMapping("/priority")
+    public ResponseEntity<PagedResponse<TaskResponse>> getTasksByPriority(
+            @RequestParam(required = false) String titleSearch,
+            @RequestParam Priority priority,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+        ) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        User currentUser = (User) authentication.getPrincipal();
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        return ResponseEntity.ok(taskService.getTasksByPriority(currentUser.getId(), priority, titleSearch, pageable));
+    }
+    
 
     @Operation(summary = "Create one task on the system")
     @ApiResponses(value = {
@@ -181,8 +211,9 @@ public class TaskController {
         })
     @PutMapping("/{taskId}")
     public ResponseEntity<TaskResponse> updateTask(
-        @PathVariable String taskId, 
-        @RequestBody @Valid UpdateTaskRequest updateTask) {
+            @PathVariable String taskId, 
+            @RequestBody @Valid UpdateTaskRequest updateTask
+        ) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         

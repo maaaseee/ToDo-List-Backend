@@ -37,7 +37,8 @@ public class CategoryController {
 
     @Operation(summary = "Get all the categories from the system")
     @GetMapping
-    public ResponseEntity<List<CategoryResponse>> getAllCategories() {
+    public ResponseEntity<List<CategoryResponse>> getAllCategories(
+    ) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
         User currentUser = (User) authentication.getPrincipal();

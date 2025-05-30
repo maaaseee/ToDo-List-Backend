@@ -1,4 +1,4 @@
-package com.aieta.springboot.todo_app.config.security;
+package com.aieta.springboot.todo_app.config.cors;
 
 import java.util.Arrays;
 
