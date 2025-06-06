@@ -69,7 +69,7 @@ public class TaskController {
     })
     @GetMapping
     public ResponseEntity<PagedResponse<TaskResponse>> getAllTasks(
-            @RequestParam(required = false) String titleSearch,
+            @RequestParam(required = false) String title,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
         ) {
@@ -79,7 +79,7 @@ public class TaskController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        return ResponseEntity.ok(taskService.getAllTasks(currentUser.getId(), pageable, titleSearch));
+        return ResponseEntity.ok(taskService.getAllTasks(currentUser.getId(), pageable, title));
     }
 
     @Operation(summary = "Get one task from the system")
@@ -133,7 +133,7 @@ public class TaskController {
     @GetMapping("/status")
     public ResponseEntity<PagedResponse<TaskResponse>> getTasksByStatus(
             @Parameter(name = "completed", description = "State of the task, completed or not", required = true)
-            @RequestParam(required = false) String titleSearch,
+            @RequestParam(required = false) String title,
             @RequestParam(defaultValue = "false") boolean completed,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -144,12 +144,12 @@ public class TaskController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        return ResponseEntity.ok(taskService.getTasksByStatus(currentUser.getId(), completed, titleSearch, pageable));
+        return ResponseEntity.ok(taskService.getTasksByStatus(currentUser.getId(), completed, title, pageable));
     }
 
     @GetMapping("/priority")
     public ResponseEntity<PagedResponse<TaskResponse>> getTasksByPriority(
-            @RequestParam(required = false) String titleSearch,
+            @RequestParam(required = false) String title,
             @RequestParam Priority priority,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -160,7 +160,7 @@ public class TaskController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        return ResponseEntity.ok(taskService.getTasksByPriority(currentUser.getId(), priority, titleSearch, pageable));
+        return ResponseEntity.ok(taskService.getTasksByPriority(currentUser.getId(), priority, title, pageable));
     }
     
 
