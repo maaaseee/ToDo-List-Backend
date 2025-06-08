@@ -35,6 +35,8 @@ public class Task {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    public Task() {}
+
     public Task(String title, String description, Category category, 
         Priority priority, String userId, boolean completed) 
         {

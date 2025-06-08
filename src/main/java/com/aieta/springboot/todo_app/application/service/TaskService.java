@@ -82,7 +82,7 @@ public class TaskService {
         Category foundCategory = null;
         if (StringUtils.hasText(request.getCategoryId())) {
             foundCategory = categoryRepository.findById(userId, request.getCategoryId())
-                        .orElseThrow(() -> new TaskNotFoundException("La tarea no existe en el sistema."));
+                        .orElseThrow(() -> new CategoryNotFoundException("La categoria no existe en el sistema."));
         }
 
         Task newTask = new Task(

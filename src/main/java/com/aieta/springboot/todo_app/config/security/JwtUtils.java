@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -23,11 +25,11 @@ public class JwtUtils {
 
     public static final String CONTENT_TYPE = "application/json";
 
-    // @Value("${security.jwt.secret-key}")
-    private String secretKey = "mySecretKey12345678901234567890123456789012345678901234567890abcdef";
+    @Value("${security.jwt.secret-key}")
+    private String secretKey;
 
-    // @Value("${security.jwt.expiration-time}")
-    private Long jwtExpiration = 86400000L;
+    @Value("${security.jwt.expiration-time}")
+    private Long jwtExpiration;
 
     private SecretKey getSigningKey() {
         // Asegurar que la clave tenga al menos 256 bits (32 bytes)

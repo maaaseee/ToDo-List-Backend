@@ -267,7 +267,7 @@ public class TaskController {
             })
         })
     @DeleteMapping("/{taskId}")
-    public ResponseEntity<?> deleteTask(@RequestParam String userId, @PathVariable String taskId) {
+    public ResponseEntity<?> deleteTask(@PathVariable String taskId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
         User currentUser = (User) authentication.getPrincipal();
